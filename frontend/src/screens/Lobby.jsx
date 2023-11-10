@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketProvider";
 
 const Lobby = () => {
@@ -6,7 +7,9 @@ const Lobby = () => {
   const [room, setroom] = useState("");
 
   const socket = useSocket();
-  console.log(socket);
+  // console.log(socket);
+
+  const navigate = useNavigate();
 
   const handelSubmit = useCallback(
     (e) => {
@@ -16,11 +19,20 @@ const Lobby = () => {
     [email, room, socket]
   );
 
+  const handelJoinRoom = useCallback(
+    (data) => {
+      const { email, room } = data;
+      navigate(`/room/${room}`);
+    },
+    [navigate]
+  );
+
   useEffect(() => {
-    socket.on("room:join", (data) => {
-      console.log(`Data from backend: ${data}`);
-    });
-  }, [socket]);
+    socket.on("room:join", handelJoinRoom);
+    return () => {
+      socket.off("room:join", handelJoinRoom);
+    };
+  }, [socket, handelJoinRoom]);
 
   return (
     <div>
